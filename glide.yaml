@@ -1,0 +1,3 @@
+package: XormDemo
+import:
+  - package: github.com/go-xorm/xorm
