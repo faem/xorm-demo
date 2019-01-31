@@ -3,81 +3,104 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
+	_ "github.com/lib/pq"
 	"log"
 	"os"
 	"os/signal"
 )
 
 type Profile struct {
-	ID       string
+	Id       string `xorm:"pk not null autoincr"`
 	Name     string
 	Company  string
 	Position string
 }
 
 func main() {
-	engine, err := xorm.NewEngine("mysql", "root:1234@/test")
-	printError(err)
+	engine := ConnectDatabase()
 	defer engine.Close()
+
+	CreateTable(engine)
+
+	CreateProfile(engine)
+	WaitForCtrlC("Press Ctrl+C to Read the Profile. . . .")
+
+	ReadProfile(engine)
+	WaitForCtrlC("Press Ctrl+C to Update the Profile. . . .")
+
+	UpdateProfile(engine)
+	WaitForCtrlC("Press Ctrl+C to Delete the Profile. . . .")
+
+	DeleteProfile(engine)
+
+}
+
+func ConnectDatabase() *xorm.Engine {
+	engine, err := xorm.NewEngine("postgres", "host=localhost port=5432 user=fahim password=1234 dbname=test sslmode=disable")
+	printError(err)
 
 	engine.SetMapper(core.SnakeMapper{})
 	engine.SetTableMapper(core.SameMapper{})
 	engine.SetColumnMapper(core.SnakeMapper{})
 
-	err = engine.Sync2(new(Profile))
+	err = engine.Ping()
 	printError(err)
 
-	//Create Profile
-	_, err = engine.Insert(Profile{
-		ID:       "1",
+	log.Println("Successfully Connected to Database. . . . .")
+
+	return engine
+}
+
+func CreateTable(engine *xorm.Engine) {
+	err := engine.Sync2(new(Profile))
+	printError(err)
+}
+
+func CreateProfile(engine *xorm.Engine) {
+	_, err := engine.Insert(Profile{
+		Id:       "1",
 		Name:     "fahim",
 		Company:  "AppsCode",
 		Position: "Software Engineer",
 	})
 	printError(err)
 	fmt.Println("Profile Created.")
+}
 
-	log.Println("Press Ctrl+C to Read the Profile. . . .")
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	<-ch
-
-	//Read Profile
-	var profile = Profile{ID: "1"}
-	_, err = engine.Get(&profile)
+func ReadProfile(engine *xorm.Engine) {
+	var profile = Profile{Id: "1"}
+	_, err := engine.Get(&profile)
 	printError(err)
 	fmt.Println("Created Profile = \n", prettyStruct(profile))
+}
 
-	log.Println("Press Ctrl+C to Update the Profile. . . .")
-	ch = make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	<-ch
-
-	//Update Profile
-	_, err = engine.Update(Profile{
-		ID:      "1",
+func UpdateProfile(engine *xorm.Engine) {
+	_, err := engine.Update(Profile{
+		Id:      "1",
 		Name:    "Fahim Abrar",
 		Company: "AppsCode Inc.",
 	})
 	printError(err)
 
-	profile = Profile{ID: "1"}
+	profile := Profile{Id: "1"}
 	_, err = engine.Get(&profile)
 	printError(err)
 	fmt.Println("Updated Profile = \n", prettyStruct(profile))
+}
 
-	log.Println("Press Ctrl+C to Delete the Profile. . . .")
-	ch = make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt)
-	<-ch
-
-	//Delete Profile
-	_, err = engine.Delete(&Profile{ID: "1"})
+func DeleteProfile(engine *xorm.Engine) {
+	_, err := engine.Delete(&Profile{Id: "1"})
 	printError(err)
 	fmt.Println("\nProfile Deleted Successfully.")
+}
+
+func WaitForCtrlC(msg string) {
+	log.Println(msg)
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt)
+	<-ch
 }
 
 func printError(err error) {

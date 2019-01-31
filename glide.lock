@@ -1,20 +1,14 @@
 hash: b6b51293ef7a1aafe998552a0584d874d26be1eb2e886b5b757b0e2737e066f5
-updated: 2019-01-30T19:11:11.424374073+06:00
+updated: 2019-01-31T10:16:34.184457671+06:00
 imports:
-- name: github.com/davecgh/go-spew
-  version: 782f4967f2dc4564575ca782fe2d04090b5faca8
-  subpackages:
-  - spew
-- name: github.com/go-sql-driver/mysql
-  version: 1b9eda25029c206f36637dde8e2acad26df99dab
 - name: github.com/go-xorm/builder
   version: 1d658d7596c25394aab557ef5b50ef35bf706384
 - name: github.com/go-xorm/core
   version: ccc80c1adf1f6172bbc548877f50a1163041a40a
 - name: github.com/go-xorm/xorm
   version: af992d69a73377c034eb9f4c6cd75eb08da18e4f
-- name: google.golang.org/appengine
-  version: e9657d882bb81064595ca3b56cbe2546bbabf7b1
+- name: github.com/lib/pq
+  version: 9eb73efc1fcc404148b56765b0d3f61d9a5ef8ee
   subpackages:
-  - cloudsql
+  - oid
 testImports: []
